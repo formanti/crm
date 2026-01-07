@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Area {
+  DEVELOPMENT
+  DESIGN
+  MARKETING
+  OPERATIONS
+  SALES
+  DATA
+  FINANCE
+  OTHER
+}
+
+enum EnglishLevel {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+  NATIVE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stage {
+  id        String   @id @default(uuid())
+  name      String
+  order     Int
+  createdAt DateTime @default(now())
+  members   Member[]
+
+  @@index([order])
+}
+
+model Member {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Contact info
+  fullName    String
+  email       String  @unique
+  whatsapp    String
+  linkedinUrl String
+
+  // Document
+  cvFileUrl String
+
+  // Professional profile
+  area            Area
+  currentRole     String
+  yearsExperience Int
+  englishLevel    EnglishLevel
+
+  // Pipeline
+  stageId String
+  stage   Stage  @relation(fields: [stageId], references: [id])
+  notes   String?
+
+  // Hired info
+  hiredDate      DateTime?
+  hiredCompany   String?
+  hiredSalaryUsd Int?
+
+  // Referrals
+  referrals Referral[]
+
+  @@index([stageId])
+  @@index([email])
+  @@index([fullName])
+}
+
+model Referral {
+  id           String   @id @default(uuid())
+  memberId     String
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  companyName  String
+  referralDate DateTime
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([memberId])
+}
