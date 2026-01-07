@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Badge } from '@/components/ui/badge'
 import { Building2, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -45,33 +44,30 @@ export function MemberCard({ member, isDragging }: MemberCardProps) {
             {...attributes}
             {...listeners}
             className={`
-        bg-white rounded-lg border border-gray-200 p-4 cursor-grab active:cursor-grabbing
-        shadow-sm hover:shadow-md transition-all
-        ${isDragging || isSortableDragging ? 'opacity-50 shadow-lg scale-105 rotate-2' : ''}
+        bg-white rounded-lg border border-[#e2e8f0] p-3 cursor-grab active:cursor-grabbing
+        hover:border-[#94a3b8] transition-all
+        ${isDragging || isSortableDragging ? 'opacity-50 shadow-lg scale-105' : 'shadow-sm'}
       `}
             onClick={() => router.push(`/members/${member.id}`)}
         >
             <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                    <h4 className="font-medium text-gray-900 line-clamp-1">{member.fullName}</h4>
+                <div>
+                    <h4 className="font-medium text-[#0f172a] text-sm line-clamp-1">{member.fullName}</h4>
+                    <p className="text-xs text-[#64748b] line-clamp-1">{member.currentRole}</p>
                 </div>
 
-                <p className="text-sm text-gray-500 line-clamp-1">{member.currentRole}</p>
-
-                <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs font-normal">
-                        {getAreaLabel(member.area)}
-                    </Badge>
-                </div>
+                <span className="inline-block bg-[#f1f5f9] text-[#64748b] text-xs px-2 py-0.5 rounded">
+                    {getAreaLabel(member.area)}
+                </span>
 
                 {isContratado && member.hiredCompany && (
-                    <div className="pt-2 border-t border-gray-100 space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-emerald-600">
-                            <Building2 className="h-3.5 w-3.5" />
+                    <div className="pt-2 border-t border-[#e2e8f0] space-y-1">
+                        <div className="flex items-center gap-1.5 text-xs text-[#22c55e]">
+                            <Building2 className="h-3 w-3" />
                             <span className="font-medium">{member.hiredCompany}</span>
                         </div>
                         {member.hiredDate && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-1.5 text-xs text-[#94a3b8]">
                                 <Calendar className="h-3 w-3" />
                                 <span>{format(new Date(member.hiredDate), 'dd MMM yyyy', { locale: es })}</span>
                             </div>

@@ -46,7 +46,6 @@ export function HiredModal({ open, onConfirm, onCancel }: HiredModalProps) {
                 hiredDate: new Date(date),
                 hiredSalaryUsd: parseInt(salary),
             })
-            // Reset form
             setCompany('')
             setDate(new Date().toISOString().split('T')[0])
             setSalary('')
@@ -65,44 +64,52 @@ export function HiredModal({ open, onConfirm, onCancel }: HiredModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={(open) => !open && handleCancel()}>
-            <DialogContent>
+            <DialogContent className="bg-white">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                            <Briefcase className="h-5 w-5 text-emerald-600" />
+                    <DialogTitle className="flex items-center gap-3 text-[#0f172a]">
+                        <div className="w-10 h-10 bg-[#dcfce7] rounded-lg flex items-center justify-center">
+                            <Briefcase className="h-5 w-5 text-[#22c55e]" />
                         </div>
-                        <span>¡Felicidades! Miembro Contratado</span>
+                        <span>¡Miembro Contratado!</span>
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-[#64748b]">
                         Ingresa los detalles de la contratación
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="company">Empresa</Label>
+                        <Label htmlFor="company" className="text-sm font-medium text-[#0f172a]">
+                            Empresa
+                        </Label>
                         <Input
                             id="company"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
                             placeholder="Nombre de la empresa"
+                            className="h-10 border-[#e2e8f0]"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="date">Fecha de contratación</Label>
+                        <Label htmlFor="date" className="text-sm font-medium text-[#0f172a]">
+                            Fecha de contratación
+                        </Label>
                         <Input
                             id="date"
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
+                            className="h-10 border-[#e2e8f0]"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="salary">Salario anual (USD)</Label>
+                        <Label htmlFor="salary" className="text-sm font-medium text-[#0f172a]">
+                            Salario anual (USD)
+                        </Label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b]">$</span>
                             <Input
                                 id="salary"
                                 type="number"
@@ -110,7 +117,7 @@ export function HiredModal({ open, onConfirm, onCancel }: HiredModalProps) {
                                 value={salary}
                                 onChange={(e) => setSalary(e.target.value)}
                                 placeholder="50000"
-                                className="pl-7"
+                                className="pl-7 h-10 border-[#e2e8f0]"
                             />
                         </div>
                     </div>
@@ -121,13 +128,13 @@ export function HiredModal({ open, onConfirm, onCancel }: HiredModalProps) {
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={handleCancel}>
+                    <Button variant="outline" onClick={handleCancel} className="border-[#e2e8f0]">
                         Cancelar
                     </Button>
                     <Button
                         onClick={handleConfirm}
                         disabled={isLoading}
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-[#22c55e] hover:bg-[#16a34a]"
                     >
                         {isLoading ? (
                             <>
@@ -135,7 +142,7 @@ export function HiredModal({ open, onConfirm, onCancel }: HiredModalProps) {
                                 Guardando...
                             </>
                         ) : (
-                            'Confirmar Contratación'
+                            'Confirmar'
                         )}
                     </Button>
                 </DialogFooter>

@@ -51,37 +51,44 @@ export function AddStageButton() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="flex-shrink-0 w-80 h-32 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-colors cursor-pointer">
+                <button className="flex-shrink-0 w-72 h-32 border-2 border-dashed border-[#e2e8f0] rounded-lg flex items-center justify-center gap-2 text-[#94a3b8] hover:border-[#94a3b8] hover:text-[#64748b] transition-colors cursor-pointer bg-transparent">
                     <Plus className="h-5 w-5" />
-                    <span className="font-medium">Nueva Etapa</span>
+                    <span className="font-medium text-sm">Nueva Etapa</span>
                 </button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-white">
                 <DialogHeader>
-                    <DialogTitle>Nueva Etapa</DialogTitle>
-                    <DialogDescription>
-                        Agrega una nueva etapa al pipeline de colocación
+                    <DialogTitle className="text-[#0f172a]">Nueva Etapa</DialogTitle>
+                    <DialogDescription className="text-[#64748b]">
+                        Agrega una nueva etapa al pipeline
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="stageName">Nombre de la etapa</Label>
+                        <Label htmlFor="stageName" className="text-sm font-medium text-[#0f172a]">
+                            Nombre de la etapa
+                        </Label>
                         <Input
                             id="stageName"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Ej: Entrevista, Oferta, etc."
+                            className="h-10 border-[#e2e8f0]"
                             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                         />
                     </div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
+                    <Button variant="outline" onClick={() => setOpen(false)} className="border-[#e2e8f0]">
                         Cancelar
                     </Button>
-                    <Button onClick={handleCreate} disabled={isLoading}>
+                    <Button
+                        onClick={handleCreate}
+                        disabled={isLoading}
+                        className="bg-[#1e293b] hover:bg-[#0f172a]"
+                    >
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

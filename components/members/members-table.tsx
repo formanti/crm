@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
     Table,
     TableBody,
@@ -13,48 +12,54 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Search, Download, ExternalLink, ArrowUpDown } from 'lucide-react'
-import { areaOptions, englishLevelOptions } from '@/lib/validations'
+import { Search, ArrowUpDown, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { areaOptions } from '@/lib/validations'
 import type { Member, Stage } from '@prisma/client'
 
+type MemberWithStage = Member & { stage: Stage }
+
 interface MembersTableProps {
-    members: (Member & { stage: Stage })[]
-    stages: Stage[]
-    initialSearch?: string
+    members: MemberWithStage[]
 }
 
-const stageColors: Record<string, string> = {
-    'info-cargada': 'bg-slate-100 text-slate-700',
-    'calificado': 'bg-blue-100 text-blue-700',
-    'referido': 'bg-amber-100 text-amber-700',
-    'contratado': 'bg-emerald-100 text-emerald-700',
-}
-
-export function MembersTable({ members, stages, initialSearch }: MembersTableProps) {
+export function MembersTable({ members }: MembersTableProps) {
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const [search, setSearch] = useState(initialSearch || '')
-    const [isPending, startTransition] = useTransition()
-    const [sortField, setSortField] = useState<keyof Member>('createdAt')
+    const [search, setSearch] = useState('')
+    const [sortField, setSortField] = useState<'fullName' | 'createdAt'>('createdAt')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
 
-    const handleSearch = (value: string) => {
-        setSearch(value)
-        startTransition(() => {
-            const params = new URLSearchParams(searchParams.toString())
-            if (value) {
-                params.set('search', value)
+    const filteredMembers = useMemo(() => {
+        return members.filter(member =>
+            member.fullName.toLowerCase().includes(search.toLowerCase()) ||
+            member.email.toLowerCase().includes(search.toLowerCase())
+        )
+    }, [members, search])
+
+    const sortedMembers = useMemo(() => {
+        return [...filteredMembers].sort((a, b) => {
+            if (sortField === 'fullName') {
+                return sortDirection === 'asc'
+                    ? a.fullName.localeCompare(b.fullName)
+                    : b.fullName.localeCompare(a.fullName)
             } else {
-                params.delete('search')
+                return sortDirection === 'asc'
+                    ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             }
-            router.push(`/members?${params.toString()}`)
         })
-    }
+    }, [filteredMembers, sortField, sortDirection])
 
-    const handleSort = (field: keyof Member) => {
+    const totalPages = Math.ceil(sortedMembers.length / itemsPerPage)
+    const paginatedMembers = sortedMembers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    )
+
+    const toggleSort = (field: 'fullName' | 'createdAt') => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
         } else {
@@ -63,149 +68,146 @@ export function MembersTable({ members, stages, initialSearch }: MembersTablePro
         }
     }
 
-    const sortedMembers = [...members].sort((a, b) => {
-        const aValue = a[sortField]
-        const bValue = b[sortField]
-
-        if (aValue === null || aValue === undefined) return 1
-        if (bValue === null || bValue === undefined) return -1
-
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return sortDirection === 'asc'
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue)
-        }
-
-        if (aValue instanceof Date && bValue instanceof Date) {
-            return sortDirection === 'asc'
-                ? aValue.getTime() - bValue.getTime()
-                : bValue.getTime() - aValue.getTime()
-        }
-
-        return sortDirection === 'asc'
-            ? (aValue as number) - (bValue as number)
-            : (bValue as number) - (aValue as number)
-    })
-
     const getAreaLabel = (area: string) => {
         return areaOptions.find(o => o.value === area)?.label || area
     }
 
-    const getEnglishLabel = (level: string) => {
-        return englishLevelOptions.find(o => o.value === level)?.label || level
+    const getStatusBadge = (stageName: string) => {
+        const name = stageName.toLowerCase()
+        if (name === 'contratado') {
+            return 'badge-done'
+        } else if (name === 'referido' || name === 'calificado') {
+            return 'badge-in-progress'
+        }
+        return 'badge-default'
     }
 
     return (
-        <div className="space-y-4">
-            {/* Search */}
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <div>
+            {/* Search & Filters */}
+            <div className="p-4 border-b border-[#e2e8f0]">
+                <div className="relative max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94a3b8]" />
                     <Input
                         placeholder="Buscar por nombre o email..."
                         value={search}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        className="pl-10 h-11"
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-10 h-10 bg-[#f8fafc] border-[#e2e8f0] rounded-lg"
                     />
-                </div>
-                <div className="text-sm text-gray-500">
-                    {members.length} miembro{members.length !== 1 ? 's' : ''}
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-slate-50/80">
-                            <TableHead className="font-semibold">
-                                <Button
-                                    variant="ghost"
-                                    className="h-auto p-0 hover:bg-transparent font-semibold"
-                                    onClick={() => handleSort('fullName')}
-                                >
-                                    Nombre
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                </Button>
-                            </TableHead>
-                            <TableHead className="font-semibold">Email</TableHead>
-                            <TableHead className="font-semibold">WhatsApp</TableHead>
-                            <TableHead className="font-semibold">Área</TableHead>
-                            <TableHead className="font-semibold">Rol</TableHead>
-                            <TableHead className="font-semibold text-center">Exp.</TableHead>
-                            <TableHead className="font-semibold">Inglés</TableHead>
-                            <TableHead className="font-semibold">Etapa</TableHead>
-                            <TableHead className="font-semibold">
-                                <Button
-                                    variant="ghost"
-                                    className="h-auto p-0 hover:bg-transparent font-semibold"
-                                    onClick={() => handleSort('createdAt')}
-                                >
-                                    Registro
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                </Button>
-                            </TableHead>
-                            <TableHead className="font-semibold text-center">CV</TableHead>
+            <Table>
+                <TableHeader>
+                    <TableRow className="hover:bg-transparent border-b border-[#e2e8f0]">
+                        <TableHead className="w-[50px] text-[#64748b] font-medium">
+                            <input type="checkbox" className="rounded border-[#e2e8f0]" />
+                        </TableHead>
+                        <TableHead className="text-[#64748b] font-medium">
+                            <button
+                                onClick={() => toggleSort('fullName')}
+                                className="flex items-center gap-1 hover:text-[#0f172a]"
+                            >
+                                Nombre
+                                <ArrowUpDown className="h-3.5 w-3.5" />
+                            </button>
+                        </TableHead>
+                        <TableHead className="text-[#64748b] font-medium">Status</TableHead>
+                        <TableHead className="text-[#64748b] font-medium">Área</TableHead>
+                        <TableHead className="text-[#64748b] font-medium">
+                            <button
+                                onClick={() => toggleSort('createdAt')}
+                                className="flex items-center gap-1 hover:text-[#0f172a]"
+                            >
+                                Registrado
+                                <ArrowUpDown className="h-3.5 w-3.5" />
+                            </button>
+                        </TableHead>
+                        <TableHead className="text-[#64748b] font-medium w-[100px] text-center">CV</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {paginatedMembers.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center py-12 text-[#64748b]">
+                                No se encontraron miembros
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedMembers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={10} className="text-center py-12 text-gray-500">
-                                    {search ? 'No se encontraron miembros' : 'No hay miembros registrados'}
+                    ) : (
+                        paginatedMembers.map((member) => (
+                            <TableRow
+                                key={member.id}
+                                className="cursor-pointer hover:bg-[#f8fafc] border-b border-[#e2e8f0]"
+                                onClick={() => router.push(`/members/${member.id}`)}
+                            >
+                                <TableCell onClick={(e) => e.stopPropagation()}>
+                                    <input type="checkbox" className="rounded border-[#e2e8f0]" />
+                                </TableCell>
+                                <TableCell>
+                                    <div>
+                                        <p className="font-medium text-[#0f172a]">{member.fullName}</p>
+                                        <p className="text-sm text-[#64748b]">{member.email}</p>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span className={getStatusBadge(member.stage.name)}>
+                                        {member.stage.name}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-[#64748b]">
+                                    {getAreaLabel(member.area)}
+                                </TableCell>
+                                <TableCell className="text-[#64748b]">
+                                    {format(new Date(member.createdAt), 'dd MMM yyyy', { locale: es })}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            window.open(member.cvFileUrl, '_blank')
+                                        }}
+                                        className="h-8 w-8 p-0 hover:bg-[#f1f5f9]"
+                                    >
+                                        <Download className="h-4 w-4 text-[#64748b]" />
+                                    </Button>
                                 </TableCell>
                             </TableRow>
-                        ) : (
-                            sortedMembers.map((member) => (
-                                <TableRow
-                                    key={member.id}
-                                    className="cursor-pointer hover:bg-slate-50 transition-colors"
-                                    onClick={() => router.push(`/members/${member.id}`)}
-                                >
-                                    <TableCell className="font-medium">{member.fullName}</TableCell>
-                                    <TableCell className="text-gray-600">{member.email}</TableCell>
-                                    <TableCell className="text-gray-600">{member.whatsapp}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary" className="font-normal">
-                                            {getAreaLabel(member.area)}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-gray-600 max-w-[150px] truncate">
-                                        {member.currentRole}
-                                    </TableCell>
-                                    <TableCell className="text-center text-gray-600">
-                                        {member.yearsExperience}
-                                    </TableCell>
-                                    <TableCell className="text-gray-600">
-                                        {getEnglishLabel(member.englishLevel)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge className={stageColors[member.stage.id] || 'bg-gray-100 text-gray-700'}>
-                                            {member.stage.name}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-gray-500 text-sm">
-                                        {format(new Date(member.createdAt), 'dd MMM yyyy', { locale: es })}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                window.open(member.cvFileUrl, '_blank')
-                                            }}
-                                        >
-                                            <Download className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 p-4 border-t border-[#e2e8f0]">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="h-9 px-3 border-[#e2e8f0]"
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Anterior
+                    </Button>
+                    <span className="text-sm text-[#64748b] px-4">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="h-9 px-3 border-[#e2e8f0]"
+                    >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }

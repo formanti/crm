@@ -100,16 +100,16 @@ export function AddMemberButton() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
+                <Button className="bg-[#1e293b] hover:bg-[#0f172a]">
                     <Plus className="mr-2 h-4 w-4" />
                     Agregar Miembro
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
                 <DialogHeader>
-                    <DialogTitle>Agregar Nuevo Miembro</DialogTitle>
-                    <DialogDescription>
-                        Ingresa la información del nuevo miembro de NEWAVE
+                    <DialogTitle className="text-[#0f172a]">Agregar Nuevo Miembro</DialogTitle>
+                    <DialogDescription className="text-[#64748b]">
+                        Ingresa la información del nuevo miembro
                     </DialogDescription>
                 </DialogHeader>
 

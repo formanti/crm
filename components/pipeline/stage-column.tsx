@@ -23,13 +23,6 @@ interface StageColumnProps {
     members: Member[]
 }
 
-const stageColors: Record<string, { bg: string; border: string; header: string }> = {
-    'info-cargada': { bg: 'bg-slate-50', border: 'border-slate-200', header: 'bg-slate-100' },
-    'calificado': { bg: 'bg-blue-50', border: 'border-blue-200', header: 'bg-blue-100' },
-    'referido': { bg: 'bg-amber-50', border: 'border-amber-200', header: 'bg-amber-100' },
-    'contratado': { bg: 'bg-emerald-50', border: 'border-emerald-200', header: 'bg-emerald-100' },
-}
-
 export function StageColumn({ stage, members }: StageColumnProps) {
     const router = useRouter()
     const [isEditing, setIsEditing] = useState(false)
@@ -39,8 +32,6 @@ export function StageColumn({ stage, members }: StageColumnProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: stage.id,
     })
-
-    const colors = stageColors[stage.id] || { bg: 'bg-gray-50', border: 'border-gray-200', header: 'bg-gray-100' }
 
     const handleSave = async () => {
         if (!name.trim()) {
@@ -86,18 +77,21 @@ export function StageColumn({ stage, members }: StageColumnProps) {
     return (
         <div
             ref={setNodeRef}
-            className={`flex-shrink-0 w-80 flex flex-col rounded-xl border ${colors.border} ${colors.bg} ${isOver ? 'ring-2 ring-indigo-400 ring-offset-2' : ''
-                } transition-all`}
+            className={`
+        flex-shrink-0 w-72 flex flex-col bg-[#f1f5f9] rounded-lg
+        ${isOver ? 'ring-2 ring-[#3b82f6] ring-offset-2' : ''}
+        transition-all
+      `}
         >
             {/* Header */}
-            <div className={`p-4 rounded-t-xl ${colors.header}`}>
+            <div className="p-3 border-b border-[#e2e8f0]">
                 <div className="flex items-center justify-between">
                     {isEditing ? (
-                        <div className="flex items-center gap-2 flex-1">
+                        <div className="flex items-center gap-1.5 flex-1">
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="h-8 text-sm font-semibold"
+                                className="h-8 text-sm font-medium bg-white"
                                 autoFocus
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleSave()
@@ -117,15 +111,15 @@ export function StageColumn({ stage, members }: StageColumnProps) {
                     ) : (
                         <>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-gray-800">{stage.name}</h3>
-                                <span className="bg-white/50 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">
+                                <span className="font-medium text-[#0f172a] text-sm">{stage.name}</span>
+                                <span className="bg-white text-[#64748b] text-xs font-medium px-2 py-0.5 rounded">
                                     {members.length}
                                 </span>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                        <MoreHorizontal className="h-4 w-4" />
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-white">
+                                        <MoreHorizontal className="h-4 w-4 text-[#64748b]" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -149,7 +143,7 @@ export function StageColumn({ stage, members }: StageColumnProps) {
             </div>
 
             {/* Cards */}
-            <div className="flex-1 p-3 space-y-3 overflow-y-auto min-h-[200px]">
+            <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[200px]">
                 <SortableContext items={members.map(m => m.id)} strategy={verticalListSortingStrategy}>
                     {members.map((member) => (
                         <MemberCard key={member.id} member={member} />
@@ -157,7 +151,7 @@ export function StageColumn({ stage, members }: StageColumnProps) {
                 </SortableContext>
 
                 {members.length === 0 && (
-                    <div className="text-center py-8 text-gray-400 text-sm">
+                    <div className="text-center py-8 text-[#94a3b8] text-sm">
                         Arrastra miembros aquí
                     </div>
                 )}
