@@ -5,11 +5,9 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { memberFormSchema, areaOptions, englishLevelOptions, type MemberFormData } from '@/lib/validations'
-import { createMember, uploadCV } from '@/actions/members'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Loader2, Upload, CheckCircle, FileText, X } from 'lucide-react'
@@ -19,7 +17,7 @@ export default function ApplyPage() {
     const [cvFile, setCvFile] = useState<File | null>(null)
     const [isSuccess, setIsSuccess] = useState(false)
 
-    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<MemberFormData>({
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm<MemberFormData>({
         resolver: zodResolver(memberFormSchema),
     })
 
@@ -47,22 +45,24 @@ export default function ApplyPage() {
         setIsSubmitting(true)
 
         try {
-            // Upload CV first
+            // Create FormData for API route
             const formData = new FormData()
-            formData.append('file', cvFile)
-            const uploadResult = await uploadCV(formData)
+            formData.append('fullName', data.fullName)
+            formData.append('email', data.email)
+            formData.append('whatsapp', data.whatsapp)
+            formData.append('linkedinUrl', data.linkedinUrl || '')
+            formData.append('area', data.area)
+            formData.append('currentRole', data.currentRole)
+            formData.append('yearsExperience', String(data.yearsExperience || 0))
+            formData.append('englishLevel', data.englishLevel)
+            formData.append('cv', cvFile)
 
-            if (!uploadResult.success || !uploadResult.url) {
-                toast.error(uploadResult.error || 'Error al subir el CV')
-                setIsSubmitting(false)
-                return
-            }
-
-            // Create member
-            const result = await createMember({
-                ...data,
-                cvFileUrl: uploadResult.url,
+            const response = await fetch('/api/apply', {
+                method: 'POST',
+                body: formData,
             })
+
+            const result = await response.json()
 
             if (result.success) {
                 setIsSuccess(true)
@@ -340,6 +340,11 @@ export default function ApplyPage() {
                         </div>
                     </form>
                 </div>
+
+                {/* Footer */}
+                <p className="text-center text-sm text-[#94a3b8] mt-8">
+                    © 2024 Nomad District. Todos los derechos reservados.
+                </p>
             </div>
         </div>
     )
