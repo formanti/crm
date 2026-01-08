@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { createServiceClient } from '@/lib/supabase/server'
 import { memberFormSchema } from '@/lib/validations'
 
+// Force Node.js runtime for Prisma compatibility
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData()
