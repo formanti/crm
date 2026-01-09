@@ -116,7 +116,11 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Error creating member:', error)
         return NextResponse.json(
-            { success: false, error: 'Error interno del servidor' },
+            {
+                success: false,
+                error: error instanceof Error ? error.message : 'Error interno del servidor',
+                details: error
+            },
             { status: 500 }
         )
     }
