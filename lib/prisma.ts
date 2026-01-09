@@ -8,7 +8,15 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL!
-  const pool = new pg.Pool({ connectionString })
+
+  // Configure pg pool with SSL for Supabase
+  const pool = new pg.Pool({
+    connectionString,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  })
+
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
