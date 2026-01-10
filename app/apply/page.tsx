@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
+import { Toaster } from 'sonner'
 import { Loader2, Upload, CheckCircle, FileText, X } from 'lucide-react'
 
 export default function ApplyPage() {
@@ -45,7 +47,29 @@ export default function ApplyPage() {
         setIsSubmitting(true)
 
         try {
-            // Create FormData for API route
+            // Upload to Supabase Storage client-side
+            const supabase = createClient()
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.pdf`
+
+            const { error: uploadError } = await supabase.storage
+                .from('cvs')
+                .upload(fileName, cvFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                })
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError)
+                toast.error('Error al subir el archivo. Intenta de nuevo.')
+                setIsSubmitting(false)
+                return
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('cvs')
+                .getPublicUrl(fileName)
+
+            // Send data to API with the CV URL
             const formData = new FormData()
             formData.append('fullName', data.fullName)
             formData.append('email', data.email)
@@ -55,7 +79,7 @@ export default function ApplyPage() {
             formData.append('currentRole', data.currentRole)
             formData.append('yearsExperience', String(data.yearsExperience || 0))
             formData.append('englishLevel', data.englishLevel)
-            formData.append('cv', cvFile)
+            formData.append('cvUrl', publicUrl) // Send URL instead of file
 
             const response = await fetch('/api/apply', {
                 method: 'POST',
@@ -70,6 +94,7 @@ export default function ApplyPage() {
                 toast.error(result.error || 'Error al enviar la aplicación')
             }
         } catch (error) {
+            console.error('Submission error:', error)
             toast.error('Error al procesar la solicitud')
         } finally {
             setIsSubmitting(false)

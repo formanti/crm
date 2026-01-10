@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
     // Skip middleware if Supabase is not configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         // Allow public paths without auth check
-        const publicPaths = ['/apply', '/login']
+        const publicPaths = ['/apply', '/login', '/api']
         const isPublicPath = publicPaths.some(path =>
             request.nextUrl.pathname.startsWith(path)
         )
@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    const publicPaths = ['/apply', '/login']
+    const publicPaths = ['/apply', '/login', '/api']
     const isPublicPath = publicPaths.some(path =>
         request.nextUrl.pathname.startsWith(path)
     )

@@ -12,6 +12,7 @@ export async function login(email: string, password: string) {
     })
 
     if (error) {
+        console.error('Supabase Login Error:', error.message)
         return { success: false, error: 'Credenciales inválidas' }
     }
 

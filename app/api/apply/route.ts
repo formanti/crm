@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createServiceClient } from '@/lib/supabase/server'
 import { memberFormSchema } from '@/lib/validations'
 
 // Force Node.js runtime for Prisma compatibility
@@ -20,7 +19,14 @@ export async function POST(request: NextRequest) {
         const currentRole = formData.get('currentRole') as string
         const yearsExperience = parseInt(formData.get('yearsExperience') as string) || 0
         const englishLevel = formData.get('englishLevel') as string
-        const cvFile = formData.get('cv') as File
+        const cvUrl = formData.get('cvUrl') as string
+
+        if (!cvUrl || cvUrl === 'null' || cvUrl === 'undefined') {
+            return NextResponse.json(
+                { success: false, error: 'CV URL is missing' },
+                { status: 400 }
+            )
+        }
 
         // Validate data
         const validationResult = memberFormSchema.safeParse({
@@ -53,37 +59,6 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Upload CV to Supabase Storage
-        let cvFileUrl = ''
-        if (cvFile && cvFile.size > 0) {
-            const supabase = await createServiceClient()
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.pdf`
-            const arrayBuffer = await cvFile.arrayBuffer()
-            const buffer = Buffer.from(arrayBuffer)
-
-            const { error: uploadError } = await supabase.storage
-                .from('cvs')
-                .upload(fileName, buffer, {
-                    contentType: 'application/pdf',
-                    cacheControl: '3600',
-                    upsert: false,
-                })
-
-            if (uploadError) {
-                console.error('Upload error:', uploadError)
-                return NextResponse.json(
-                    { success: false, error: 'Error al subir el CV' },
-                    { status: 500 }
-                )
-            }
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('cvs')
-                .getPublicUrl(fileName)
-
-            cvFileUrl = publicUrl
-        }
-
         // Get the first stage
         const firstStage = await prisma.stage.findFirst({
             where: { order: 1 },
@@ -107,8 +82,10 @@ export async function POST(request: NextRequest) {
                 currentRole,
                 yearsExperience,
                 englishLevel: englishLevel as "BASIC" | "INTERMEDIATE" | "ADVANCED" | "NATIVE",
-                cvFileUrl,
-                stageId: firstStage.id,
+                cvFileUrl: cvUrl,
+                stage: {
+                    connect: { id: firstStage.id }
+                },
             },
         })
 
