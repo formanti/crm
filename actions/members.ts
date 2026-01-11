@@ -270,7 +270,7 @@ export async function uploadCV(formData: FormData) {
     }
 }
 
-export async function importMembers(membersData: any[]) {
+export async function importMembers(membersData: Record<string, unknown>[]) {
     try {
         const stats = {
             total: membersData.length,
@@ -302,7 +302,7 @@ export async function importMembers(membersData: any[]) {
 
                 // Check existing member
                 const existingMember = await prisma.member.findUnique({
-                    where: { email: data.email },
+                    where: { email: String(data.email) },
                 })
 
                 if (existingMember) {
@@ -313,9 +313,9 @@ export async function importMembers(membersData: any[]) {
                             fullName: data.fullName,
                             // Only update fields if provided and different? 
                             // For now, we update these basic fields if present
-                            ...(data.whatsapp && { whatsapp: data.whatsapp }),
-                            ...(data.linkedinUrl && { linkedinUrl: data.linkedinUrl }),
-                            ...(data.role && { currentRole: data.role }),
+                            ...(data.whatsapp ? { whatsapp: String(data.whatsapp) } : {}),
+                            ...(data.linkedinUrl ? { linkedinUrl: String(data.linkedinUrl) } : {}),
+                            ...(data.role ? { currentRole: String(data.role) } : {}),
                             // Preserve existing CV and Stage
                             updatedAt: new Date(),
                         }
@@ -325,11 +325,11 @@ export async function importMembers(membersData: any[]) {
                     // Create new
                     await prisma.member.create({
                         data: {
-                            email: data.email.toString().trim(),
-                            fullName: data.fullName.toString().trim(),
-                            whatsapp: data.whatsapp?.toString().trim() || '',
-                            linkedinUrl: data.linkedinUrl?.toString().trim() || '',
-                            currentRole: data.role?.toString().trim() || 'Member',
+                            email: String(data.email).trim(),
+                            fullName: String(data.fullName).trim(),
+                            whatsapp: data.whatsapp ? String(data.whatsapp).trim() : '',
+                            linkedinUrl: data.linkedinUrl ? String(data.linkedinUrl).trim() : '',
+                            currentRole: data.role ? String(data.role).trim() : 'Member',
                             area: 'OTHER', // Default
                             englishLevel: 'BASIC', // Default
                             yearsExperience: 0, // Default

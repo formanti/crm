@@ -443,7 +443,7 @@ export default function ApplyPage() {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-[#94a3b8] mt-8">
-                    © 2024 Nomad District. Todos los derechos reservados. (v2.1)
+                    © 2024 Nomad District. Todos los derechos reservados. (v2.2)
                 </p>
             </div>
         </div>

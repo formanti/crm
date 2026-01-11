@@ -18,10 +18,19 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 
+interface ImportRow {
+    email: string
+    fullName: string
+    whatsapp?: string
+    linkedinUrl?: string
+    role?: string
+    [key: string]: unknown
+}
+
 export function ImportMemberButton() {
     const [isOpen, setIsOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [previewData, setPreviewData] = useState<any[]>([])
+    const [previewData, setPreviewData] = useState<ImportRow[]>([])
     const [file, setFile] = useState<File | null>(null)
     const [stats, setStats] = useState<{
         total: number
@@ -68,7 +77,7 @@ export function ImportMemberButton() {
         }
     }
 
-    const parseExcel = (file: File): Promise<any[]> => {
+    const parseExcel = (file: File): Promise<ImportRow[]> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
             reader.onload = (e) => {
@@ -77,32 +86,35 @@ export function ImportMemberButton() {
                     const workbook = XLSX.read(data, { type: 'binary' })
                     const sheetName = workbook.SheetNames[0]
                     const sheet = workbook.Sheets[sheetName]
-                    const jsonData = XLSX.utils.sheet_to_json(sheet)
+                    const jsonData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet)
 
                     // Helper to fuzzy match keys
-                    const getValue = (row: any, possibleKeys: string[]) => {
+                    const getValue = (row: Record<string, unknown>, possibleKeys: string[]) => {
                         const rowKeys = Object.keys(row)
-                        const normalizedKeys = possibleKeys.map(k => k.toLowerCase().trim())
 
-                        // Find a key in row that matches one of our possible keys (case insensitive)
-                        const foundKey = rowKeys.find(k =>
-                            normalizedKeys.includes(k.toLowerCase().trim())
-                        )
+                        for (let i = 0; i < possibleKeys.length; i++) {
+                            const key = possibleKeys[i]
+                            const exactMatch = row[key] // Direct usage works because of Record
+                            if (exactMatch !== undefined) return exactMatch
 
-                        return foundKey ? row[foundKey] : undefined
+                            // Try normalized match
+                            const normalizedKey = key.toLowerCase().trim()
+                            const foundKey = rowKeys.find(k => k.toLowerCase().trim() === normalizedKey)
+                            if (foundKey) return row[foundKey]
+                        }
+                        return undefined
                     }
 
-                    // Robust mapping
-                    const mappedData = jsonData.map((row: any) => ({
-                        fullName: getValue(row, ['Nombre Completo', 'Nombre', 'Name', 'Full Name', 'Nombres', 'Member Name']),
-                        email: getValue(row, ['Email', 'Correo', 'Correo Electrónico', 'Mail', 'E-mail', 'Correo Electronico']),
-                        whatsapp: getValue(row, ['Whatsapp', 'Teléfono', 'Phone', 'Celular', 'Mobile', 'Telefono']),
-                        linkedinUrl: getValue(row, ['Linkedin', 'LinkedIn', 'URL Linkedin', 'Perfil Linkedin', 'Linkedin Profile']),
-                        role: getValue(row, ['Rol', 'Cargo', 'Role', 'Current Role', 'Puesto', 'Job Title']),
-                    }))
+                    const normalizedData: ImportRow[] = jsonData.map((row: Record<string, unknown>) => ({
+                        email: String(getValue(row, ['Email', 'Correo', 'Mail', 'E-mail', 'Correo Electrónico']) || ''),
+                        fullName: String(getValue(row, ['Full Name', 'Nombre', 'Nombre Completo', 'Name', 'Nombres', 'Member Name']) || ''),
+                        whatsapp: String(getValue(row, ['WhatsApp', 'Whatsapp', 'Telefono', 'Teléfono', 'Celular', 'Phone', 'Mobile']) || ''),
+                        linkedinUrl: String(getValue(row, ['LinkedIn', 'Linkedin', 'LinkedIn URL', 'URL Linkedin', 'Perfil Linkedin', 'Linkedin Profile']) || ''),
+                        role: String(getValue(row, ['Current Role', 'Rol', 'Cargo', 'Role', 'Puesto', 'Job Title']) || '')
+                    })).filter((item: ImportRow) => item.email && item.fullName)
 
                     // Filter out empty rows (where name and email are missing)
-                    const validData = mappedData.filter(d => d.fullName || d.email)
+                    const validData = normalizedData.filter(d => d.fullName || d.email)
 
                     resolve(validData)
                 } catch (error) {
