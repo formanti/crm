@@ -269,3 +269,92 @@ export async function uploadCV(formData: FormData) {
         return { success: false, error: 'Error al subir el CV' }
     }
 }
+
+export async function importMembers(membersData: any[]) {
+    try {
+        const stats = {
+            total: membersData.length,
+            created: 0,
+            updated: 0,
+            skipped: 0,
+            errors: 0
+        }
+
+        // Get the default stage
+        const firstStage = await prisma.stage.findFirst({
+            where: { order: 1 },
+        })
+
+        if (!firstStage) {
+            return {
+                success: false,
+                error: 'Error de configuración: no hay etapas definidas'
+            }
+        }
+
+        for (const data of membersData) {
+            try {
+                // Quick validation of required fields
+                if (!data.email || !data.fullName) {
+                    stats.skipped++
+                    continue
+                }
+
+                // Check existing member
+                const existingMember = await prisma.member.findUnique({
+                    where: { email: data.email },
+                })
+
+                if (existingMember) {
+                    // Update existing
+                    await prisma.member.update({
+                        where: { id: existingMember.id },
+                        data: {
+                            fullName: data.fullName,
+                            // Only update fields if provided and different? 
+                            // For now, we update these basic fields if present
+                            ...(data.whatsapp && { whatsapp: data.whatsapp }),
+                            ...(data.linkedinUrl && { linkedinUrl: data.linkedinUrl }),
+                            ...(data.role && { currentRole: data.role }),
+                            // Preserve existing CV and Stage
+                            updatedAt: new Date(),
+                        }
+                    })
+                    stats.updated++
+                } else {
+                    // Create new
+                    await prisma.member.create({
+                        data: {
+                            email: data.email.toString().trim(),
+                            fullName: data.fullName.toString().trim(),
+                            whatsapp: data.whatsapp?.toString().trim() || '',
+                            linkedinUrl: data.linkedinUrl?.toString().trim() || '',
+                            currentRole: data.role?.toString().trim() || 'Member',
+                            area: 'OTHER', // Default
+                            englishLevel: 'BASIC', // Default
+                            yearsExperience: 0, // Default
+                            cvFileUrl: '', // Initial empty
+                            stageId: firstStage.id,
+                        }
+                    })
+                    stats.created++
+                }
+            } catch (error) {
+                console.error(`Error processing member ${data.email}:`, error)
+                stats.errors++
+            }
+        }
+
+        revalidatePath('/members')
+        revalidatePath('/pipeline')
+
+        return { success: true, stats }
+    } catch (error) {
+        console.error('Error importing members:', error)
+        return {
+            success: false,
+            error: 'Error al procesar el archivo'
+        }
+    }
+}
+

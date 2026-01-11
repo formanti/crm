@@ -2,6 +2,7 @@ import { getMembers } from '@/actions/members'
 import { getStages } from '@/actions/stages'
 import { MembersTable } from '@/components/members/members-table'
 import { AddMemberButton } from '@/components/members/add-member-button'
+import { ImportMemberButton } from '@/components/members/import-member-button'
 import { Users, TrendingUp, Briefcase } from 'lucide-react'
 
 export default async function MembersPage({
@@ -29,7 +30,10 @@ export default async function MembersPage({
                     <h1 className="text-2xl font-semibold text-[#0f172a]">Miembros</h1>
                     <p className="text-[#64748b] mt-1">Gestiona los miembros de la comunidad</p>
                 </div>
-                <AddMemberButton />
+                <div className="flex gap-2">
+                    <ImportMemberButton />
+                    <AddMemberButton />
+                </div>
             </div>
 
             {/* Stats Cards */}

@@ -54,7 +54,20 @@ export const memberFormSchema = z.object({
     englishLevel: z.enum(englishLevelValues, {
         message: 'Selecciona tu nivel de inglés',
     }),
+    location: z
+        .string()
+        .min(2, 'Ingresa tu ciudad y país'),
+    workPreference: z.enum(['REMOTE', 'HYBRID', 'ONSITE'], {
+        message: 'Selecciona tu preferencia de trabajo',
+    }),
+    willingToRelocate: z.boolean().default(false),
 })
+
+export const workPreferenceOptions = [
+    { value: 'REMOTE', label: 'Remoto 100%' },
+    { value: 'HYBRID', label: 'Híbrido' },
+    { value: 'ONSITE', label: 'Presencial' },
+] as const
 
 export const memberUpdateSchema = memberFormSchema.extend({
     notes: z.string().optional(),

@@ -26,6 +26,12 @@ enum EnglishLevel {
   NATIVE
 }
 
+enum WorkPreference {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -63,6 +69,11 @@ model Member {
   currentRole     String
   yearsExperience Int
   englishLevel    EnglishLevel
+
+  // Preferences
+  location        String?
+  workPreference  WorkPreference @default(REMOTE)
+  willingToRelocate Boolean @default(false)
 
   // Pipeline
   stageId String

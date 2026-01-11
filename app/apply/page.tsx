@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { memberFormSchema, areaOptions, englishLevelOptions, type MemberFormData } from '@/lib/validations'
+import { memberFormSchema, areaOptions, englishLevelOptions, workPreferenceOptions, type MemberFormData } from '@/lib/validations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,8 +19,19 @@ export default function ApplyPage() {
     const [cvFile, setCvFile] = useState<File | null>(null)
     const [isSuccess, setIsSuccess] = useState(false)
 
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm<MemberFormData>({
+    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<MemberFormData>({
         resolver: zodResolver(memberFormSchema),
+        defaultValues: {
+            fullName: '',
+            email: '',
+            whatsapp: '',
+            linkedinUrl: '',
+            currentRole: '',
+            yearsExperience: 0,
+            location: '',
+            workPreference: 'REMOTE',
+            willingToRelocate: false,
+        }
     })
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +90,9 @@ export default function ApplyPage() {
             formData.append('currentRole', data.currentRole)
             formData.append('yearsExperience', String(data.yearsExperience || 0))
             formData.append('englishLevel', data.englishLevel)
+            formData.append('location', data.location)
+            formData.append('workPreference', data.workPreference)
+            formData.append('willingToRelocate', String(data.willingToRelocate))
             formData.append('cvUrl', publicUrl) // Send URL instead of file
 
             const response = await fetch('/api/apply', {
@@ -294,6 +308,67 @@ export default function ApplyPage() {
                                         <p className="text-sm text-red-500 mt-1">{errors.englishLevel.message}</p>
                                     )}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Location & Preferences Section */}
+                        <div className="p-8 border-b border-[#e2e8f0]">
+                            <h2 className="text-lg font-semibold text-[#0f172a] mb-6">
+                                Ubicación y Preferencias
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="location" className="text-sm font-medium text-[#0f172a]">
+                                        ¿Dónde vives actualmente? (Ciudad, País)
+                                    </Label>
+                                    <Input
+                                        id="location"
+                                        {...register('location')}
+                                        placeholder="Ej: Ciudad de México, México"
+                                        className="mt-1.5 h-11 bg-white border-[#e2e8f0] rounded-lg"
+                                    />
+                                    {errors.location && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.location.message}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label className="text-sm font-medium text-[#0f172a]">
+                                        Preferencia de trabajo
+                                    </Label>
+                                    <Select onValueChange={(value) => setValue('workPreference', value as MemberFormData['workPreference'])}>
+                                        <SelectTrigger className="mt-1.5 h-11 bg-white border-[#e2e8f0] rounded-lg">
+                                            <SelectValue placeholder="Selecciona" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {workPreferenceOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.workPreference && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.workPreference.message}</p>
+                                    )}
+                                </div>
+
+                                {(watch('workPreference') === 'HYBRID' || watch('workPreference') === 'ONSITE') && (
+                                    <div className="flex items-center h-full pt-8">
+                                        <div className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                id="willingToRelocate"
+                                                {...register('willingToRelocate')}
+                                                className="h-4 w-4 rounded border-gray-300 text-[#1e293b] focus:ring-[#1e293b]"
+                                            />
+                                            <Label htmlFor="willingToRelocate" className="text-sm font-medium text-[#0f172a]">
+                                                ¿Estarías dispuesto a mudarte a CDMX?
+                                            </Label>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

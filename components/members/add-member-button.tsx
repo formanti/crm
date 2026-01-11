@@ -16,7 +16,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { memberFormSchema, type MemberFormData, areaOptions, englishLevelOptions } from '@/lib/validations'
+import { memberFormSchema, type MemberFormData, areaOptions, englishLevelOptions, workPreferenceOptions } from '@/lib/validations'
 import { createMember, uploadCV } from '@/actions/members'
 import { Plus, Loader2, Upload, FileText } from 'lucide-react'
 import { toast } from 'sonner'
@@ -31,12 +31,16 @@ export function AddMemberButton() {
         register,
         handleSubmit,
         setValue,
+        watch,
         reset,
         formState: { errors },
     } = useForm<MemberFormData>({
         resolver: zodResolver(memberFormSchema),
         defaultValues: {
             yearsExperience: 0,
+            location: '',
+            workPreference: 'REMOTE',
+            willingToRelocate: false,
         },
     })
 
@@ -239,6 +243,47 @@ export function AddMemberButton() {
                                 <p className="text-sm text-red-500">{errors.englishLevel.message}</p>
                             )}
                         </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="md:col-span-2 space-y-2">
+                            <Label htmlFor="location">Ubicación (Ciudad, País)</Label>
+                            <Input id="location" {...register('location')} placeholder="Ej: CDMX, México" />
+                            {errors.location && (
+                                <p className="text-sm text-red-500">{errors.location.message}</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Preferencia de Trabajo</Label>
+                            <Select onValueChange={(value) => setValue('workPreference', value as MemberFormData['workPreference'])}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona preferencia" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {workPreferenceOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.workPreference && (
+                                <p className="text-sm text-red-500">{errors.workPreference.message}</p>
+                            )}
+                        </div>
+                        {(watch('workPreference') === 'HYBRID' || watch('workPreference') === 'ONSITE') && (
+                            <div className="flex items-center pt-8">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="willingToRelocate"
+                                        {...register('willingToRelocate')}
+                                        className="h-4 w-4 rounded border-gray-300 text-[#1e293b] focus:ring-[#1e293b]"
+                                    />
+                                    <Label htmlFor="willingToRelocate">¿Dispuesto a mudarse a CDMX?</Label>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4">

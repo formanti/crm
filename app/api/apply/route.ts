@@ -20,6 +20,9 @@ export async function POST(request: NextRequest) {
         const yearsExperience = parseInt(formData.get('yearsExperience') as string) || 0
         const englishLevel = formData.get('englishLevel') as string
         const cvUrl = formData.get('cvUrl') as string
+        const location = formData.get('location') as string
+        const workPreference = formData.get('workPreference') as string
+        const willingToRelocate = formData.get('willingToRelocate') === 'true'
 
         if (!cvUrl || cvUrl === 'null' || cvUrl === 'undefined') {
             return NextResponse.json(
@@ -38,6 +41,9 @@ export async function POST(request: NextRequest) {
             currentRole,
             yearsExperience,
             englishLevel,
+            location,
+            workPreference,
+            willingToRelocate,
         })
 
         if (!validationResult.success) {
@@ -82,6 +88,9 @@ export async function POST(request: NextRequest) {
                 currentRole,
                 yearsExperience,
                 englishLevel: englishLevel as "BASIC" | "INTERMEDIATE" | "ADVANCED" | "NATIVE",
+                location,
+                workPreference: workPreference as "REMOTE" | "HYBRID" | "ONSITE",
+                willingToRelocate,
                 cvFileUrl: cvUrl,
                 stage: {
                     connect: { id: firstStage.id }
