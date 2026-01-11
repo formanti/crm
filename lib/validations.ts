@@ -60,7 +60,7 @@ export const memberFormSchema = z.object({
     workPreference: z.enum(['REMOTE', 'HYBRID', 'ONSITE'], {
         message: 'Selecciona tu preferencia de trabajo',
     }),
-    willingToRelocate: z.boolean().default(false),
+    willingToRelocate: z.boolean().optional(),
 })
 
 export const workPreferenceOptions = [
