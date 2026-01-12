@@ -15,7 +15,17 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Remote Job Academy",
     description: "Compártenos tu información para referirte a los mejores trabajos",
-    images: ["/nd-logo.png"],
+    siteName: "Remote Job Academy",
+    images: [
+      {
+        url: "/og-preview.png",
+        width: 800,
+        height: 600,
+        alt: "Remote Job Academy Logo",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
   },
 };
 
