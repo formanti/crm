@@ -9,8 +9,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CRM NEWAVE",
-  description: "Sistema de gestión de miembros de la comunidad NEWAVE",
+  title: "Remote Job Academy",
+  description: "Compártenos tu información para referirte a los mejores trabajos",
+  openGraph: {
+    title: "Remote Job Academy",
+    description: "Compártenos tu información para referirte a los mejores trabajos",
+    images: ["/nd-logo.png"],
+  },
 };
 
 export default function RootLayout({
