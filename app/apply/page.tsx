@@ -147,17 +147,17 @@ export default function ApplyPage() {
                 {/* Header */}
                 <div className="text-center mb-10">
                     <Image
-                        src="/nd-logo.png"
-                        alt="Remote Job Academy"
-                        width={80}
-                        height={80}
+                        src="/logo.png"
+                        alt="Nomad District"
+                        width={180}
+                        height={36}
                         className="mx-auto mb-6"
                     />
                     <h1 className="text-3xl font-semibold text-[#0f172a]">
-                        Aplica para conseguir tu trabajo remoto
+                        Únete a la comunidad
                     </h1>
                     <p className="text-[#64748b] mt-2">
-                        Compártenos tu información para referirte a los mejores trabajos
+                        Completa el formulario para aplicar
                     </p>
                 </div>
 
@@ -466,7 +466,7 @@ export default function ApplyPage() {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-[#94a3b8] mt-8">
-                    © 2025 Remote Job Academy. Todos los derechos reservados.
+                    © 2024 Nomad District. Todos los derechos reservados. (v2.2)
                 </p>
             </div>
         </div>
