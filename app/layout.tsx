@@ -9,6 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://crm-newave.vercel.app"),
   title: "Remote Job Academy",
   description: "Compártenos tu información para referirte a los mejores trabajos",
   openGraph: {
