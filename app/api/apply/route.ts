@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
         const whatsapp = formData.get('whatsapp') as string
         const linkedinUrl = formData.get('linkedinUrl') as string
         const area = formData.get('area') as string
+        const otherArea = formData.get('otherArea') as string || undefined
         const currentRole = formData.get('currentRole') as string
         const yearsExperience = parseInt(formData.get('yearsExperience') as string) || 0
         const englishLevel = formData.get('englishLevel') as string
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
             whatsapp,
             linkedinUrl,
             area,
+            otherArea,
             currentRole,
             yearsExperience,
             englishLevel,
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
                 whatsapp,
                 linkedinUrl,
                 area: area as "DEVELOPMENT" | "DESIGN" | "MARKETING" | "OPERATIONS" | "SALES" | "DATA" | "FINANCE" | "OTHER",
+                otherArea: area === 'OTHER' ? otherArea : null,
                 currentRole,
                 yearsExperience,
                 englishLevel: englishLevel as "BASIC" | "INTERMEDIATE" | "ADVANCED" | "NATIVE",

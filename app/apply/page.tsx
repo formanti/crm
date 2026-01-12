@@ -31,8 +31,11 @@ export default function ApplyPage() {
             location: '',
             workPreference: 'REMOTE',
             willingToRelocate: false,
+            otherArea: '',
         }
     })
+
+    const selectedArea = watch('area')
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -87,6 +90,9 @@ export default function ApplyPage() {
             formData.append('whatsapp', data.whatsapp)
             formData.append('linkedinUrl', data.linkedinUrl || '')
             formData.append('area', data.area)
+            if (data.area === 'OTHER' && data.otherArea) {
+                formData.append('otherArea', data.otherArea)
+            }
             formData.append('currentRole', data.currentRole)
             formData.append('yearsExperience', String(data.yearsExperience || 0))
             formData.append('englishLevel', data.englishLevel)
@@ -255,6 +261,23 @@ export default function ApplyPage() {
                                         <p className="text-sm text-red-500 mt-1">{errors.area.message}</p>
                                     )}
                                 </div>
+
+                                {selectedArea === 'OTHER' && (
+                                    <div>
+                                        <Label htmlFor="otherArea" className="text-sm font-medium text-[#0f172a]">
+                                            ¿Cuál es tu área?
+                                        </Label>
+                                        <Input
+                                            id="otherArea"
+                                            {...register('otherArea')}
+                                            placeholder="Ej: Recursos Humanos, Legal, etc."
+                                            className="mt-1.5 h-11 bg-white border-[#e2e8f0] rounded-lg"
+                                        />
+                                        {errors.otherArea && (
+                                            <p className="text-sm text-red-500 mt-1">{errors.otherArea.message}</p>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div>
                                     <Label htmlFor="currentRole" className="text-sm font-medium text-[#0f172a]">

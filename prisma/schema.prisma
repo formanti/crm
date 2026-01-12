@@ -66,6 +66,7 @@ model Member {
 
   // Professional profile
   area            Area
+  otherArea       String?
   currentRole     String
   yearsExperience Int
   englishLevel    EnglishLevel

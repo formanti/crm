@@ -61,6 +61,16 @@ export const memberFormSchema = z.object({
         message: 'Selecciona tu preferencia de trabajo',
     }),
     willingToRelocate: z.boolean().optional(),
+    otherArea: z.string().optional(),
+}).refine((data) => {
+    // Si area es OTHER, otherArea debe tener al menos 2 caracteres
+    if (data.area === 'OTHER') {
+        return data.otherArea && data.otherArea.length >= 2
+    }
+    return true
+}, {
+    message: 'Especifica tu área profesional',
+    path: ['otherArea'],
 })
 
 export const workPreferenceOptions = [
