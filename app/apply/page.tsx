@@ -154,10 +154,10 @@ export default function ApplyPage() {
                         className="mx-auto mb-6"
                     />
                     <h1 className="text-3xl font-semibold text-[#0f172a]">
-                        Únete a la comunidad
+                        Programa de Referidos
                     </h1>
                     <p className="text-[#64748b] mt-2">
-                        Completa el formulario para aplicar
+                        Compártenos tu información para referirte a los mejores trabajos
                     </p>
                 </div>
 
